@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Visor de Logs | LogViewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold mb-2 text-center">Visor de Logs del Sistema</h1>
+      <p class="text-center text-gray-500">Visualiza registros como <code>/var/log/ufw.log</code> directamente en el navegador.</p>
+    </div>
+
+    <!-- Formulario para elegir ruta -->
+    <form method="get" class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+      <input name="file" type="text" value="{{ path }}" placeholder="/var/log/ufw.log"
+        class="w-full sm:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
+      <button type="submit"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg">Abrir</button>
+    </form>
+
+    {% if error %}
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">{{ error }}</div>
+    {% endif %}
+
+    {% if log_data %}
+      <div class="overflow-x-auto rounded-lg shadow bg-white">
+        <table class="min-w-full table-auto text-sm text-left">
+          <thead class="bg-gray-200 text-gray-700 uppercase tracking-wider text-xs">
+            <tr>
+              <th class="px-4 py-2">Hora</th>
+              <th class="px-4 py-2">Contenido</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for line in log_data %}
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 font-mono text-gray-600">{{ line.timestamp }}</td>
+                <td class="px-4 py-2 font-mono text-gray-800">{{ line.content }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-center text-gray-500 mt-4">No se encontraron entradas en el log.</p>
+    {% endif %}
+  </div>
+</body>
+</html>
