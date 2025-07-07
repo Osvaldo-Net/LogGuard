@@ -3,7 +3,7 @@ def parse_log(path):
     with open(path) as f:
         for line in f:
             parts = line.strip().split(' ')
-            timestamp = parts[0]
+            timestamp = parts[0].replace('T', ' ')
             rest = ' '.join(parts[1:])
             log_entries.append({
                 'timestamp': timestamp,
