@@ -35,6 +35,7 @@ def logs():
     log_dir = os.environ.get('LOG_DIR', '/var/log')
     log_filename = request.args.get('file', 'ufw.log')
     limit = request.args.get('limit', '20')
+    search_term = request.args.get('search', '').strip()
 
     log_path = os.path.join(log_dir, log_filename)
 
@@ -51,10 +52,15 @@ def logs():
             error='Archivo no encontrado',
             path=log_path,
             selected_limit=limit,
-            available_logs=available_logs
+            available_logs=available_logs,
+            search_term=search_term
         )
 
     log_data = parse_log(log_path)
+
+    # Filtrar por término de búsqueda si se proporciona
+    if search_term:
+        log_data = [entry for entry in log_data if search_term.lower() in entry['content'].lower()]
 
     # Ordenar por fecha descendente
     log_data = sorted(log_data, key=lambda x: x['timestamp'], reverse=True)
@@ -72,7 +78,8 @@ def logs():
         log_data=log_data,
         path=log_path,
         selected_limit=limit,
-        available_logs=available_logs
+        available_logs=available_logs,
+        search_term=search_term
     )
 
 @app.route('/logout')
