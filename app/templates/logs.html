@@ -10,14 +10,20 @@
   <div class="max-w-6xl mx-auto p-6">
     <div class="mb-6">
       <h1 class="text-3xl font-bold mb-2 text-center">Visor de Logs del Sistema</h1>
-      <p class="text-center text-gray-500">Visualiza registros como <code>/var/log/ufw.log</code> directamente en el navegador.</p>
+      <p class="text-center text-gray-500">Visualiza registros desde <code>/var/log/</code> directamente en el navegador.</p>
     </div>
 
-    <!-- Formulario con selector de cantidad -->
+    <!-- Formulario con selector de archivo y cantidad -->
     <form method="get" class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-      <input name="file" type="text" value="{{ path }}" placeholder="/var/log/ufw.log"
-        class="w-full sm:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
+      
+      <!-- Selector de archivo -->
+      <select name="file" class="px-3 py-2 border rounded-lg">
+        {% for fname in available_logs %}
+          <option value="{{ fname }}" {% if fname == path.split('/')[-1] %}selected{% endif %}>{{ fname }}</option>
+        {% endfor %}
+      </select>
 
+      <!-- Selector de límite -->
       <select name="limit" class="px-3 py-2 border rounded-lg">
         <option value="10" {% if selected_limit == '10' %}selected{% endif %}>Últimos 10</option>
         <option value="20" {% if selected_limit == '20' %}selected{% endif %}>Últimos 20</option>
@@ -92,7 +98,7 @@
               const oldTable = document.querySelector("table");
               if (newTable && oldTable) oldTable.innerHTML = newTable.innerHTML;
             });
-        }, 5000); // cada 5 segundos
+        }, 5000);
       } else {
         clearInterval(intervalId);
         btn.textContent = "Activar tiempo real";
@@ -103,3 +109,4 @@
   </script>
 </body>
 </html>
+
