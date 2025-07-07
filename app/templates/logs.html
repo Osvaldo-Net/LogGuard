@@ -1,95 +1,115 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Visor de Logs | LogViewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen">
-  <div class="max-w-6xl mx-auto p-6">
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold mb-2 text-center">Visor de Logs del Sistema</h1>
-      <p class="text-center text-gray-500">Visualiza registros desde <code>/var/log/</code> directamente en el navegador.</p>
-    </div>
+<body class="bg-gray-50 text-gray-800 min-h-screen font-sans">
 
-    <!-- Formulario con selector de archivo y cantidad -->
-    <form method="get" class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-      
-      <!-- Selector de archivo -->
-      <select name="file" class="px-3 py-2 border rounded-lg">
-        {% for fname in available_logs %}
-          <option value="{{ fname }}" {% if fname == path.split('/')[-1] %}selected{% endif %}>{{ fname }}</option>
-        {% endfor %}
-      </select>
+  <!-- Contenedor principal -->
+  <div class="max-w-5xl mx-auto p-6 space-y-6">
 
-      <!-- Selector de límite -->
-      <select name="limit" class="px-3 py-2 border rounded-lg">
-        <option value="10" {% if selected_limit == '10' %}selected{% endif %}>Últimos 10</option>
-        <option value="20" {% if selected_limit == '20' %}selected{% endif %}>Últimos 20</option>
-        <option value="50" {% if selected_limit == '50' %}selected{% endif %}>Últimos 50</option>
-        <option value="all" {% if selected_limit == 'all' %}selected{% endif %}>Todos</option>
-      </select>
+    <!-- Cabecera -->
+    <header class="flex justify-between items-center border-b pb-4">
+      <div>
+        <h1 class="text-3xl font-bold text-amber-600">Visor de Logs</h1>
+        <p class="text-sm text-gray-500">Registros desde <code>/var/log/</code></p>
+      </div>
+      <a href="/logout" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 002 2h3a2 2 0 002-2V7a2 2 0 00-2-2h-3a2 2 0 00-2 2v1" />
+        </svg>
+        Cerrar sesión
+      </a>
+    </header>
 
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        Ver
-      </button>
-    </form>
+    <!-- Formulario de filtros -->
+    <section class="bg-white p-4 rounded-lg shadow border space-y-4">
+      <form method="get" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+        <select name="file" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+          {% for fname in available_logs %}
+            <option value="{{ fname }}" {% if fname == path.split('/')[-1] %}selected{% endif %}>{{ fname }}</option>
+          {% endfor %}
+        </select>
 
-    <!-- Botón tiempo real -->
-    <div class="text-center mb-4">
-      <button id="toggleRealtime" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-        Activar tiempo real
-      </button>
-    </div>
+        <select name="limit" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <option value="10" {% if selected_limit == '10' %}selected{% endif %}>Últimos 10</option>
+          <option value="20" {% if selected_limit == '20' %}selected{% endif %}>Últimos 20</option>
+          <option value="50" {% if selected_limit == '50' %}selected{% endif %}>Últimos 50</option>
+          <option value="all" {% if selected_limit == 'all' %}selected{% endif %}>Todos</option>
+        </select>
 
-    <!-- Mensaje de error -->
+        <button type="submit" class="flex justify-center items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg transition shadow">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Ver Logs
+        </button>
+      </form>
+
+      <div class="text-center">
+        <button id="toggleRealtime" class="flex justify-center items-center gap-2 mx-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition shadow">
+          <svg id="rtIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64" />
+          </svg>
+          Activar tiempo real
+        </button>
+      </div>
+    </section>
+
+    <!-- Error -->
     {% if error %}
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-center">{{ error }}</div>
+      <div class="bg-red-100 text-red-700 border border-red-300 px-4 py-3 rounded-lg shadow text-center">
+        {{ error }}
+      </div>
     {% endif %}
 
     <!-- Tabla de logs -->
-    {% if log_data %}
-      <div class="overflow-x-auto rounded-lg shadow bg-white">
-        <table class="min-w-full table-auto text-sm text-left">
-          <thead class="bg-gray-200 text-gray-700 uppercase tracking-wider text-xs">
-            <tr>
-              <th class="px-4 py-2">Hora</th>
-              <th class="px-4 py-2">Contenido</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            {% for line in log_data %}
-              <tr class="hover:bg-gray-50">
-                <td class="px-4 py-2 font-mono text-gray-600">{{ line.timestamp }}</td>
-                <td class="px-4 py-2 font-mono text-gray-800">{{ line.content }}</td>
+    <section class="bg-white rounded-lg shadow border">
+      {% if log_data %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm text-left">
+            <thead class="bg-amber-100 text-amber-700 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3">Hora</th>
+                <th class="px-4 py-3">Contenido</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <p class="text-center text-gray-500 mt-4">No se encontraron entradas en el log.</p>
-    {% endif %}
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              {% for line in log_data %}
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-4 py-2 font-mono text-gray-600">{{ line.timestamp }}</td>
+                  <td class="px-4 py-2 font-mono text-gray-800">{{ line.content }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-center text-gray-500 p-4">No se encontraron entradas en el log o no se seleccionó ningun archivo de log.</p>
+      {% endif %}
+    </section>
   </div>
 
-  <!-- JS para tiempo real -->
+  <!-- JS: tiempo real -->
   <script>
     let realtime = false;
     let intervalId = null;
+    const btn = document.getElementById('toggleRealtime');
+    const icon = document.getElementById('rtIcon');
 
-    document.getElementById('toggleRealtime').addEventListener('click', () => {
+    btn.addEventListener('click', () => {
       realtime = !realtime;
-      const btn = document.getElementById('toggleRealtime');
-
       if (realtime) {
-        btn.textContent = "Desactivar tiempo real";
-        btn.classList.remove("bg-green-600");
-        btn.classList.add("bg-red-600");
+        btn.classList.replace("bg-green-500", "bg-red-500");
+        btn.classList.replace("hover:bg-green-600", "hover:bg-red-600");
+        btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg> Desactivar tiempo real`;
 
         intervalId = setInterval(() => {
-          const url = new URL(window.location.href);
-          fetch(url)
+          fetch(window.location.href)
             .then(res => res.text())
             .then(html => {
               const parser = new DOMParser();
@@ -101,12 +121,11 @@
         }, 5000);
       } else {
         clearInterval(intervalId);
-        btn.textContent = "Activar tiempo real";
-        btn.classList.remove("bg-red-600");
-        btn.classList.add("bg-green-600");
+        btn.classList.replace("bg-red-500", "bg-green-500");
+        btn.classList.replace("hover:bg-red-600", "hover:bg-green-600");
+        btn.innerHTML = `<svg id="rtIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64"/></svg> Activar tiempo real`;
       }
     });
   </script>
 </body>
 </html>
-
