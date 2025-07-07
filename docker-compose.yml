@@ -6,7 +6,8 @@ services:
       - "5000:5000"
     volumes:
       - ./app/users.json:/app/users.json
-      - /var/log/ufw.log:/var/log/ufw.log:ro
+      - /var/log/servidor-syslog:/logs:ro
     environment:
       - TZ=America/Bogota
+      - LOG_DIR=/logs
     restart: unless-stopped
