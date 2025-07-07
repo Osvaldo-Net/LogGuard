@@ -31,11 +31,14 @@ def logs():
     if 'username' not in session:
         return redirect('/')
 
-    log_dir = '/var/log'
+    # Directorio configurable por variable de entorno
+    log_dir = os.environ.get('LOG_DIR', '/var/log')
     log_filename = request.args.get('file', 'ufw.log')
     limit = request.args.get('limit', '20')
 
     log_path = os.path.join(log_dir, log_filename)
+
+    # Lista de archivos .log disponibles
     available_logs = [
         f for f in os.listdir(log_dir)
         if os.path.isfile(os.path.join(log_dir, f)) and f.endswith('.log')
@@ -53,10 +56,10 @@ def logs():
 
     log_data = parse_log(log_path)
 
-    # Ordenar por fecha (más reciente primero)
+    # Ordenar por fecha descendente
     log_data = sorted(log_data, key=lambda x: x['timestamp'], reverse=True)
 
-    # Aplicar límite de resultados
+    # Limitar número de entradas si se especifica
     if limit != 'all':
         try:
             count = int(limit)
