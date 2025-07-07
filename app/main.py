@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session
 from auth import check_login, must_change_password, change_password
 from log_parser import parse_log
 import os
@@ -30,11 +30,47 @@ def change_pass():
 def logs():
     if 'username' not in session:
         return redirect('/')
-    log_path = request.args.get('file', '/var/log/ufw.log')
+
+    log_dir = '/var/log'
+    log_filename = request.args.get('file', 'ufw.log')
+    limit = request.args.get('limit', '20')
+
+    log_path = os.path.join(log_dir, log_filename)
+    available_logs = [
+        f for f in os.listdir(log_dir)
+        if os.path.isfile(os.path.join(log_dir, f)) and f.endswith('.log')
+    ]
+
     if not os.path.exists(log_path):
-        return render_template('logs.html', log_data=[], error='Archivo no encontrado', path=log_path)
+        return render_template(
+            'logs.html',
+            log_data=[],
+            error='Archivo no encontrado',
+            path=log_path,
+            selected_limit=limit,
+            available_logs=available_logs
+        )
+
     log_data = parse_log(log_path)
-    return render_template('logs.html', log_data=log_data, path=log_path)
+
+    # Ordenar por fecha (más reciente primero)
+    log_data = sorted(log_data, key=lambda x: x['timestamp'], reverse=True)
+
+    # Aplicar límite de resultados
+    if limit != 'all':
+        try:
+            count = int(limit)
+            log_data = log_data[:count]
+        except ValueError:
+            log_data = log_data[:20]
+
+    return render_template(
+        'logs.html',
+        log_data=log_data,
+        path=log_path,
+        selected_limit=limit,
+        available_logs=available_logs
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
