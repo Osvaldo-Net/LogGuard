@@ -1,136 +1,171 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Visor de Logs | LogViewer</title>
-  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-  <script src="https://cdn.tailwindcss.com"></script>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Visor de Logs | LogViewer</title>
+	<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+	<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen font-sans">
+<body class="bg-gray-100 text-gray-800 min-h-screen font-sans">
+	<div class="max-w-6xl mx-auto p-6 space-y-6">
 
-  <!-- Contenedor principal -->
-  <div class="max-w-5xl mx-auto p-6 space-y-6">
-
-    <!-- Cabecera -->
-    <header class="flex justify-between items-center border-b pb-4">
-      <div>
-        <h1 class="text-3xl font-bold text-amber-600">Visor de Logs</h1>
-        <p class="text-sm text-gray-500">Selecciona y visualiza registros desde el directorio configurado del sistema.</p>
-      </div>
-      <a href="/logout" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 002 2h3a2 2 0 002-2V7a2 2 0 00-2-2h-3a2 2 0 00-2 2v1" />
+		<!-- Cabecera -->
+		<header class="flex justify-between items-center border-b pb-4">
+			<div class="flex items-center gap-3">
+				<svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v4a1 1 0 001 1h3m10 4v-4a1 1 0 011-1h3m-5 4H8m0 0H4a1 1 0 01-1-1v-4m5 4v4m6-4v4" />
         </svg>
-        Cerrar sesión
-      </a>
-    </header>
+				<div>
+					<h1 class="text-3xl font-bold text-amber-600">Visor de Logs</h1>
+					<p class="text-sm text-gray-500">Explora tus registros del sistema con estilo moderno.</p>
+				</div>
+			</div>
+			<a href="/logout" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow">
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7" />
+        </svg> Cerrar sesión
+			</a>
+		</header>
 
-    <!-- Formulario de filtros -->
-    <section class="bg-white p-4 rounded-lg shadow border space-y-4">
-      <form method="get" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-        <select name="file" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
-          {% for fname in available_logs %}
-            <option value="{{ fname }}" {% if fname == path.split('/')[-1] %}selected{% endif %}>{{ fname }}</option>
-          {% endfor %}
-        </select>
+		<!-- Filtros -->
+		<section class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+			<form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
 
-        <select name="limit" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
-          <option value="10" {% if selected_limit == '10' %}selected{% endif %}>Últimos 10</option>
-          <option value="20" {% if selected_limit == '20' %}selected{% endif %}>Últimos 20</option>
-          <option value="50" {% if selected_limit == '50' %}selected{% endif %}>Últimos 50</option>
-          <option value="all" {% if selected_limit == 'all' %}selected{% endif %}>Todos</option>
-        </select>
+				<!-- Directorio -->
+				<div class="relative">
+					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18" />
+      </svg>
+					<select name="dir" onchange="this.form.submit()" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <option value="">Archivos sueltos</option>
+        {% for d in available_dirs %}
+          <option value="{{ d }}" {% if d == selected_dir %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+				</div>
 
-          <!-- Campo de búsqueda -->
-        <input type="text" name="search" placeholder="Buscar en logs..." value="{{ search_term or '' }}"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"/>
+				<!-- Archivo -->
+				<div class="relative">
+					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v16h16V4H4z" />
+      </svg>
+					<select name="file" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+        {% for fname in available_logs %}
+          <option value="{{ fname }}" {% if fname == selected_log_file %}selected{% endif %}>{{ fname }}</option>
+        {% endfor %}
+      </select>
+				</div>
 
-        <button type="submit" class="flex justify-center items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg transition shadow">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          Ver Logs
-        </button>
-      </form>
+				<!-- Límite -->
+				<div class="relative">
+					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h2a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 0a1 1 0 011-1h2a1 1 0 011 1v16a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+      </svg>
+					<select name="limit" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <option value="10" {% if selected_limit == '10' %}selected{% endif %}>Últimos 10</option>
+        <option value="20" {% if selected_limit == '20' %}selected{% endif %}>Últimos 20</option>
+        <option value="50" {% if selected_limit == '50' %}selected{% endif %}>Últimos 50</option>
+        <option value="all" {% if selected_limit == 'all' %}selected{% endif %}>Todos</option>
+      </select>
+				</div>
 
-      <div class="text-center">
-        <button id="toggleRealtime" class="flex justify-center items-center gap-2 mx-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition shadow">
-          <svg id="rtIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64" />
-          </svg>
-          Activar tiempo real
-        </button>
-      </div>
-    </section>
+				<!-- Búsqueda -->
+				<div class="relative md:col-span-2">
+					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+      </svg>
+					<input type="text" name="search" placeholder="Buscar en logs..." value="{{ search_term or '' }}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+				</div>
 
-    <!-- Error -->
-    {% if error %}
-      <div class="bg-red-100 text-red-700 border border-red-300 px-4 py-3 rounded-lg shadow text-center">
-        {{ error }}
-      </div>
-    {% endif %}
+				<!-- Botón -->
+				<div class="md:col-span-5">
+					<button type="submit" class="w-full flex justify-center items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl shadow transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        Ver Logs
+      </button>
+				</div>
+			</form>
 
-    <!-- Tabla de logs -->
-    <section class="bg-white rounded-lg shadow border">
-      {% if log_data %}
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm text-left">
-            <thead class="bg-amber-100 text-amber-700 text-xs uppercase tracking-wider">
-              <tr>
-                <th class="px-4 py-3">Hora</th>
-                <th class="px-4 py-3">Contenido</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              {% for line in log_data %}
-                <tr class="hover:bg-gray-50 transition">
-                  <td class="px-4 py-2 font-mono text-gray-600">{{ line.timestamp }}</td>
-                  <td class="px-4 py-2 font-mono text-gray-800">{{ line.content }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <p class="text-center text-gray-500 p-4">No se encontraron entradas en el log o no se seleccionó ningun archivo de log.</p>
-      {% endif %}
-    </section>
-  </div>
+			<!-- Botón tiempo real -->
+			<div class="text-center pt-2">
+				<button id="toggleRealtime" class="flex justify-center items-center gap-2 mx-auto bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg shadow transition">
+      <svg id="rtIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64" />
+      </svg>
+      Activar tiempo real
+    </button>
+			</div>
+		</section>
 
-  <!-- JS: tiempo real -->
-  <script>
-    let realtime = false;
-    let intervalId = null;
-    const btn = document.getElementById('toggleRealtime');
-    const icon = document.getElementById('rtIcon');
+		{% if error %}
+		<div class="bg-red-100 text-red-700 border border-red-300 px-4 py-3 rounded-lg shadow text-center">
+			{{ error }}
+		</div>
+		{% endif %}
 
-    btn.addEventListener('click', () => {
-      realtime = !realtime;
-      if (realtime) {
-        btn.classList.replace("bg-green-500", "bg-red-500");
-        btn.classList.replace("hover:bg-green-600", "hover:bg-red-600");
-        btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg> Desactivar tiempo real`;
+		<!-- Tabla de logs -->
+		<section class="bg-white rounded-lg shadow border">
+			{% if log_data %}
+			<div class="overflow-x-auto">
+				<table class="min-w-full text-sm text-left">
+					<thead class="bg-amber-100 text-amber-700 text-xs uppercase tracking-wider">
+						<tr>
+							<th class="px-4 py-3">Hora</th>
+							<th class="px-4 py-3">Contenido</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-100">
+						{% for line in log_data %}
+						<tr class="hover:bg-gray-50 transition">
+							<td class="px-4 py-2 font-mono text-gray-600">{{ line.timestamp }}</td>
+							<td class="px-4 py-2 font-mono text-gray-800">{{ line.content }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			{% else %}
+			<p class="text-center text-gray-500 p-4">No se encontraron entradas en el log o no se seleccionó ningún archivo de log.</p>
+			{% endif %}
+		</section>
+	</div>
 
-        intervalId = setInterval(() => {
-          fetch(window.location.href)
-            .then(res => res.text())
-            .then(html => {
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(html, "text/html");
-              const newTable = doc.querySelector("table");
-              const oldTable = document.querySelector("table");
-              if (newTable && oldTable) oldTable.innerHTML = newTable.innerHTML;
-            });
-        }, 5000);
-      } else {
-        clearInterval(intervalId);
-        btn.classList.replace("bg-red-500", "bg-green-500");
-        btn.classList.replace("hover:bg-red-600", "hover:bg-green-600");
-        btn.innerHTML = `<svg id="rtIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64"/></svg> Activar tiempo real`;
-      }
-    });
-  </script>
+	<script>
+		let realtime = false;
+		    let intervalId = null;
+		    const btn = document.getElementById('toggleRealtime');
+		
+		    btn.addEventListener('click', () => {
+		      realtime = !realtime;
+		      btn.classList.toggle("bg-green-500");
+		      btn.classList.toggle("bg-red-500");
+		      btn.classList.toggle("hover:bg-green-600");
+		      btn.classList.toggle("hover:bg-red-600");
+		      btn.innerHTML = realtime ?
+		        `<svg class='w-5 h-5' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M17 16l4-4m0 0l-4-4m4 4H7'/></svg> Desactivar tiempo real`
+		        :
+		        `<svg class='w-5 h-5' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64'/></svg> Activar tiempo real`;
+		
+		      if (realtime) {
+		        intervalId = setInterval(() => {
+		          fetch(window.location.href)
+		            .then(res => res.text())
+		            .then(html => {
+		              const parser = new DOMParser();
+		              const doc = parser.parseFromString(html, "text/html");
+		              const newTable = doc.querySelector("table");
+		              const oldTable = document.querySelector("table");
+		              if (newTable && oldTable) oldTable.innerHTML = newTable.innerHTML;
+		            });
+		        }, 5000);
+		      } else {
+		        clearInterval(intervalId);
+		      }
+		    });
+		
+	</script>
 </body>
 </html>
