@@ -1,7 +1,7 @@
 import json
 import hashlib
 
-USERS_FILE = '/app/users.json'
+USERS_FILE = '/app/data/users.json'
 
 def hash_pass(password):
     return hashlib.sha256(password.encode()).hexdigest()
