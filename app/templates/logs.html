@@ -3,25 +3,39 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>Visor de Logs | LogViewer</title>
+	<title>Visor de Logs Moderno</title>
 	<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+		      theme: {
+		        extend: {
+		          colors: {
+		            "gris-mate": "#2e2e2e",
+		            "hueso": "#f8f8f6",
+		            "verde-mate": "#3aa57c",
+		            "verde-hover": "#2d7a60",
+		          }
+		        }
+		      }
+		    };
+		
+	</script>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen font-sans">
-	<div class="max-w-6xl mx-auto p-6 space-y-6">
-
+<body class="bg-hueso text-gris-mate min-h-screen font-sans">
+	<div class="max-w-6xl mx-auto px-6 py-10 space-y-8">
 		<!-- Cabecera -->
-		<header class="flex justify-between items-center border-b pb-4">
-			<div class="flex items-center gap-3">
-				<svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v4a1 1 0 001 1h3m10 4v-4a1 1 0 011-1h3m-5 4H8m0 0H4a1 1 0 01-1-1v-4m5 4v4m6-4v4" />
+		<header class="flex justify-between items-center bg-white shadow-md p-6 rounded-2xl">
+			<div class="flex items-center gap-4">
+				<svg class="w-10 h-10 text-verde-mate" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16v16H4z" />
         </svg>
 				<div>
-					<h1 class="text-3xl font-bold text-amber-600">Visor de Logs</h1>
-					<p class="text-sm text-gray-500">Explora tus registros del sistema con estilo moderno.</p>
+					<h1 class="text-3xl font-semibold">Visor de Logs</h1>
+					<p class="text-sm text-gray-500">Explora tus registros del sistema</p>
 				</div>
 			</div>
-			<a href="/logout" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow">
+			<a href="/logout" class="flex items-center gap-2 bg-verde-mate hover:bg-verde-hover text-white px-4 py-2 rounded-xl transition shadow">
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7" />
         </svg> Cerrar sesión
@@ -29,143 +43,64 @@
 		</header>
 
 		<!-- Filtros -->
-		<section class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
-			<form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+		<section class="bg-white shadow-inner p-6 rounded-2xl border space-y-6">
+			<form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-6">
+				<select name="dir" onchange="this.form.submit()" class="col-span-1 md:col-span-1 p-3 border rounded-xl bg-hueso">
+          <option value="">Archivos sueltos</option>
+          {% for d in available_dirs %}
+            <option value="{{ d }}" {% if d == selected_dir %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
 
-				<!-- Directorio -->
-				<div class="relative">
-					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18" />
-      </svg>
-					<select name="dir" onchange="this.form.submit()" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <option value="">Archivos sueltos</option>
-        {% for d in available_dirs %}
-          <option value="{{ d }}" {% if d == selected_dir %}selected{% endif %}>{{ d }}</option>
-        {% endfor %}
-      </select>
-				</div>
+				<select name="file" class="col-span-1 md:col-span-1 p-3 border rounded-xl bg-hueso">
+          {% for fname in available_logs %}
+            <option value="{{ fname }}" {% if fname == selected_log_file %}selected{% endif %}>{{ fname }}</option>
+          {% endfor %}
+        </select>
 
-				<!-- Archivo -->
-				<div class="relative">
-					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v16h16V4H4z" />
-      </svg>
-					<select name="file" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
-        {% for fname in available_logs %}
-          <option value="{{ fname }}" {% if fname == selected_log_file %}selected{% endif %}>{{ fname }}</option>
-        {% endfor %}
-      </select>
-				</div>
+				<select name="limit" class="col-span-1 md:col-span-1 p-3 border rounded-xl bg-hueso">
+          <option value="10" {% if selected_limit == '10' %}selected{% endif %}>10 últimos</option>
+          <option value="20" {% if selected_limit == '20' %}selected{% endif %}>20 últimos</option>
+          <option value="50" {% if selected_limit == '50' %}selected{% endif %}>50 últimos</option>
+          <option value="all" {% if selected_limit == 'all' %}selected{% endif %}>Todos</option>
+        </select>
 
-				<!-- Límite -->
-				<div class="relative">
-					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h2a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 0a1 1 0 011-1h2a1 1 0 011 1v16a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-      </svg>
-					<select name="limit" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <option value="10" {% if selected_limit == '10' %}selected{% endif %}>Últimos 10</option>
-        <option value="20" {% if selected_limit == '20' %}selected{% endif %}>Últimos 20</option>
-        <option value="50" {% if selected_limit == '50' %}selected{% endif %}>Últimos 50</option>
-        <option value="all" {% if selected_limit == 'all' %}selected{% endif %}>Todos</option>
-      </select>
-				</div>
+				<input type="text" name="search" placeholder="Buscar en logs..." value="{{ search_term or '' }}" class="col-span-1 md:col-span-2 p-3 border rounded-xl bg-hueso" />
 
-				<!-- Búsqueda -->
-				<div class="relative md:col-span-2">
-					<svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
-      </svg>
-					<input type="text" name="search" placeholder="Buscar en logs..." value="{{ search_term or '' }}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
-				</div>
-
-				<!-- Botón -->
-				<div class="md:col-span-5">
-					<button type="submit" class="w-full flex justify-center items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl shadow transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-        Ver Logs
-      </button>
-				</div>
+				<button type="submit" class="col-span-1 md:col-span-5 bg-verde-mate hover:bg-verde-hover text-white py-3 rounded-xl font-medium transition shadow">
+          <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Ver Logs
+        </button>
 			</form>
-
-			<!-- Botón tiempo real -->
-			<div class="text-center pt-2">
-				<button id="toggleRealtime" class="flex justify-center items-center gap-2 mx-auto bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg shadow transition">
-      <svg id="rtIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64" />
-      </svg>
-      Activar tiempo real
-    </button>
-			</div>
 		</section>
 
-		{% if error %}
-		<div class="bg-red-100 text-red-700 border border-red-300 px-4 py-3 rounded-lg shadow text-center">
-			{{ error }}
-		</div>
-		{% endif %}
-
-		<!-- Tabla de logs -->
-		<section class="bg-white rounded-lg shadow border">
+		<!-- Tabla -->
+		<section class="bg-white rounded-2xl shadow border">
 			{% if log_data %}
 			<div class="overflow-x-auto">
 				<table class="min-w-full text-sm text-left">
-					<thead class="bg-amber-100 text-amber-700 text-xs uppercase tracking-wider">
+					<thead class="bg-verde-mate text-white text-xs uppercase tracking-wider">
 						<tr>
-							<th class="px-4 py-3">Hora</th>
-							<th class="px-4 py-3">Contenido</th>
+							<th class="px-6 py-4">Hora</th>
+							<th class="px-6 py-4">Contenido</th>
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-gray-100">
+					<tbody class="divide-y divide-gray-200">
 						{% for line in log_data %}
 						<tr class="hover:bg-gray-50 transition">
-							<td class="px-4 py-2 font-mono text-gray-600">{{ line.timestamp }}</td>
-							<td class="px-4 py-2 font-mono text-gray-800">{{ line.content }}</td>
+							<td class="px-6 py-3 font-mono text-gray-600">{{ line.timestamp }}</td>
+							<td class="px-6 py-3 font-mono text-gray-800">{{ line.content }}</td>
 						</tr>
 						{% endfor %}
 					</tbody>
 				</table>
 			</div>
 			{% else %}
-			<p class="text-center text-gray-500 p-4">No se encontraron entradas en el log o no se seleccionó ningún archivo de log.</p>
+			<p class="text-center text-gray-500 p-6">No se encontraron entradas en el log.</p>
 			{% endif %}
 		</section>
 	</div>
-
-	<script>
-		let realtime = false;
-		    let intervalId = null;
-		    const btn = document.getElementById('toggleRealtime');
-		
-		    btn.addEventListener('click', () => {
-		      realtime = !realtime;
-		      btn.classList.toggle("bg-green-500");
-		      btn.classList.toggle("bg-red-500");
-		      btn.classList.toggle("hover:bg-green-600");
-		      btn.classList.toggle("hover:bg-red-600");
-		      btn.innerHTML = realtime ?
-		        `<svg class='w-5 h-5' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M17 16l4-4m0 0l-4-4m4 4H7'/></svg> Desactivar tiempo real`
-		        :
-		        `<svg class='w-5 h-5' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M4 4v6h6M20 20v-6h-6M5.64 17.36A9 9 0 1117.36 5.64'/></svg> Activar tiempo real`;
-		
-		      if (realtime) {
-		        intervalId = setInterval(() => {
-		          fetch(window.location.href)
-		            .then(res => res.text())
-		            .then(html => {
-		              const parser = new DOMParser();
-		              const doc = parser.parseFromString(html, "text/html");
-		              const newTable = doc.querySelector("table");
-		              const oldTable = document.querySelector("table");
-		              if (newTable && oldTable) oldTable.innerHTML = newTable.innerHTML;
-		            });
-		        }, 5000);
-		      } else {
-		        clearInterval(intervalId);
-		      }
-		    });
-		
-	</script>
 </body>
 </html>
