@@ -1,7 +1,7 @@
 services:
-  logviewer:
+  LogGuard:
     build: . 
-    container_name: Logviewer  
+    container_name: LogGuard  
     ports:
       - "5000:5000"  
     volumes:
