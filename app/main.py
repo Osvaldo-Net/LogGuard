@@ -9,6 +9,9 @@ app.secret_key = 'supersecretkey'
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
+    if 'username' in session:
+        return redirect('/logs')
+
     if request.method == 'POST':
         if check_login(request.form['username'], request.form['password']):
             session['username'] = request.form['username']
@@ -16,7 +19,9 @@ def login():
                 return redirect('/change-password')
             return redirect('/logs')
         return render_template('login.html', error='Credenciales inválidas')
+
     return render_template('login.html')
+
 
 
 @app.route('/change-password', methods=['GET', 'POST'])
@@ -36,7 +41,6 @@ def logs():
 
     root_log_dir = os.environ.get('LOG_DIR', '/logs')
 
-    # Detectar carpetas y archivos en /logs
     entries = os.listdir(root_log_dir)
 
     available_dirs = [
