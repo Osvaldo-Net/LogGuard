@@ -5,11 +5,11 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./app/users.json:/config/users.json
+      - ./app/data:/app/data
      #- /var/log/servidor-syslog:/logs/servidor-syslog:ro  # Monta el directorio /var/log/servidor-syslog como solo lectura
      #- /var/log/samba:/logs/samba:ro                      # Monta el directorio de logs de Samba como solo lectura
       - /var/log/auth.log:/logs/auth.log:ro                # Monta el archivo auth.log como archivo suelto
     environment:
       - TZ=America/Bogota
-      - LOG_DIR=/logs                                      # Directorio raíz de logs dentro del contenedor
+      - LOG_DIR=/logs                                     
     restart: unless-stopped
