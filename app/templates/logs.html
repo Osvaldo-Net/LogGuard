@@ -24,7 +24,7 @@
 </head>
 <body class="bg-hueso text-gris-mate min-h-screen font-sans">
 	<div class="max-w-6xl mx-auto px-6 py-10 space-y-8">
-		<!-- Cabecera -->
+
 		<header class="flex justify-between items-center bg-white shadow-md p-6 rounded-2xl">
 			<div class="flex items-center gap-4">
 				<svg class="w-10 h-10 text-verde-mate" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -48,13 +48,13 @@
 				<select name="dir" onchange="this.form.submit()" class="col-span-1 md:col-span-1 p-3 border rounded-xl bg-hueso">
           <option value="">Archivos sueltos</option>
           {% for d in available_dirs %}
-            <option value="{{ d }}" {% if d == selected_dir %}selected{% endif %}>{{ d }}</option>
+          <option value="{{ d }}" {% if d == selected_dir %}selected{% endif %}>{{ d }}</option>
           {% endfor %}
         </select>
 
 				<select name="file" class="col-span-1 md:col-span-1 p-3 border rounded-xl bg-hueso">
           {% for fname in available_logs %}
-            <option value="{{ fname }}" {% if fname == selected_log_file %}selected{% endif %}>{{ fname }}</option>
+          <option value="{{ fname }}" {% if fname == selected_log_file %}selected{% endif %}>{{ fname }}</option>
           {% endfor %}
         </select>
 
@@ -67,16 +67,29 @@
 
 				<input type="text" name="search" placeholder="Buscar en logs..." value="{{ search_term or '' }}" class="col-span-1 md:col-span-2 p-3 border rounded-xl bg-hueso" />
 
-				<button type="submit" class="col-span-1 md:col-span-5 bg-verde-mate hover:bg-verde-hover text-white py-3 rounded-xl font-medium transition shadow">
-          <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          Ver Logs
-        </button>
-			</form>
+				<div class="col-span-1 md:col-span-5 flex flex-col md:flex-row justify-center md:justify-end gap-4">
+					<button type="submit" class="bg-verde-mate hover:bg-verde-hover text-white py-3 px-5 rounded-xl font-medium transition shadow flex items-center gap-2">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+    Ver Logs
+  </button>
+
+					<button id="toggleRealtime" type="button" class="bg-verde-mate hover:bg-verde-hover text-white py-3 px-5 rounded-xl font-medium transition shadow flex items-center gap-2">
+    <svg id="rtIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v18l14-9-14-9z" />
+    </svg>
+    Activar tiempo real
+  </button>
+				</div>
+
+
+
+
+
+
 		</section>
 
-		<!-- Tabla -->
 		<section class="bg-white rounded-2xl shadow border">
 			{% if log_data %}
 			<div class="overflow-x-auto">
@@ -102,5 +115,55 @@
 			{% endif %}
 		</section>
 	</div>
+
+	<script>
+		let realtime = false;
+		  let intervalId = null;
+		
+		  const btn = document.getElementById('toggleRealtime');
+		  const defaultIcon = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+		    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3m3 0h3m3 0h3m3 0h3" />
+		  </svg>`;
+		
+		  const stopIcon = `<svg class='w-5 h-5' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'>
+		    <path stroke-linecap='round' stroke-linejoin='round' d='M17 16l4-4m0 0l-4-4m4 4H7'/>
+		  </svg>`;
+		
+		  btn.addEventListener('click', () => {
+		    realtime = !realtime;
+		
+		if (realtime) {
+		  btn.classList.replace("bg-verde-mate", "bg-red-500");
+		  btn.classList.replace("hover:bg-verde-hover", "hover:bg-red-600");
+		  btn.innerHTML = `
+		    <svg class='w-5 h-5' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'>
+		      <path stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12'/>
+		    </svg> Desactivar tiempo real`;
+		  
+		  intervalId = setInterval(() => {
+		    fetch(window.location.href)
+		      .then(res => res.text())
+		      .then(html => {
+		        const parser = new DOMParser();
+		        const doc = parser.parseFromString(html, "text/html");
+		        const newBody = doc.querySelector("table tbody");
+		        const oldBody = document.querySelector("table tbody");
+		        if (newBody && oldBody) oldBody.innerHTML = newBody.innerHTML;
+		      });
+		  }, 5000);
+		} else {
+		  clearInterval(intervalId);
+		  btn.classList.replace("bg-red-500", "bg-verde-mate");
+		  btn.classList.replace("hover:bg-red-600", "hover:bg-verde-hover");
+		  btn.innerHTML = `
+		    <svg class='w-5 h-5' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'>
+		      <path stroke-linecap='round' stroke-linejoin='round' d='M14.752 11.168l-5.197-3.028A1 1 0 008 9.028v5.944a1 1 0 001.555.832l5.197-3.028a1 1 0 000-1.664z' />
+		    </svg> Activar tiempo real`;
+		}
+		
+		  });
+		
+	</script>
+
 </body>
 </html>
