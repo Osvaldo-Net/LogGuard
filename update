@@ -1,15 +1,16 @@
 services:
-  LogGuard:
-    build: . 
-    container_name: LogGuard  
+  logguard:
+    build: .
+    container_name: LogGuard
     ports:
-      - "5000:5000"  
+      - "5000:5000"
     volumes:
-      - ./app/users.json:/app/users.json  
-      - /var/log/servidor-syslog:/logs/servidor-syslog:ro  # Monta el directorio /var/log/servidor-syslog como solo lectura
-      - /var/log/samba:/logs/samba:ro  # Monta el directorio de logs de Samba como solo lectura
-      - /var/log/auth.log:/logs/auth.log  # Monta el archivo suelto auth.log directamente en /logs
+      - ./app/users.json:/app/users.json
+      # - /var/log/servidor-syslog:/logs/servidor-syslog:ro
+      # - /var/log/samba:/logs/samba:ro
+      # - /var/log/auth.log:/logs/auth.log
     environment:
-      - TZ=America/Bogota  
-      - LOG_DIR=/logs      # Ruta raíz donde la app buscará logs y subdirectorios
-    restart: unless-stopped  
+      - TZ=America/Bogota
+      - LOG_DIR=/logs
+    restart: unless-stopped
+
