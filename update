@@ -8,7 +8,7 @@ services:
       - ./app/users.json:/app/users.json
       # - /var/log/servidor-syslog:/logs/servidor-syslog:ro
       # - /var/log/samba:/logs/samba:ro
-      # - /var/log/auth.log:/logs/auth.log
+        - /var/log/auth.log:/logs/auth.log
     environment:
       - TZ=America/Bogota
       - LOG_DIR=/logs
